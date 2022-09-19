@@ -1,0 +1,183 @@
+---
+slug: css-notes
+title: CSS notes
+tags: [css]
+---
+
+<!--truncate-->
+
+## :is()
+
+The :is() function takes a list of selectors as its argument, and selects any element that matches. 
+
+```css
+/* Original CSS */
+.site-branding a:hover path,
+#menu-modal a:hover path,
+#menu-modal button:hover path {
+  @apply transition-opacity opacity-70;
+}
+
+/* Rewritten to use is() */
+:is(
+  .site-branding a, 
+  #menu-modal a, 
+  #menu-modal button
+  ):hover path {
+  @apply transition-opacity opacity-70;
+}
+```
+
+:::note
+
+The selector with the most specificity in the `is` pseudo-class is used to calculate the specificity.
+
+:::
+
+To avoid specificity issues, `:where()` can be used.
+
+More [in depth article on :where() :is() :has()](https://polypane.app/blog/where-is-has-new-css-selectors-that-make-your-life-easier/).
+
+## :has()
+
+Video explainer: https://www.youtube.com/watch?v=axkefJvfS9U
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/:has
+
+
+## li
+
+Use custom images for bullet points. This example also inlines the svg image.
+
+Note the inline svg code must not have any line breaks. It also must not have any `#` symbols (for example in the fill color), instead use something like fill="rgb(50, 50, 50)". [Use a hex to rgb converter](https://www.rapidtables.com/convert/color/hex-to-rgb.html).
+
+```css
+.li-bullet {
+  @apply pl-10 md:pl-14 pb-5 bg-no-repeat;
+  
+  background-image: url('data:image/svg+xml; utf8, <svg width="25" height="2" viewBox="0 0 25 2" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="0.983398" y1="1.13074" x2="24.9834" y2="1.13074" stroke="rgb(18, 18, 18)"/></svg>');
+
+  background-position: left 9px;
+
+  @media (min-width: 768px) {
+    background-position: left 14px;
+  }	
+}
+```
+
+## scroll-behavior (Smooth Scroll)
+
+Make the browser scroll in a smooth fashion using a browser defined timing function. Normally useful for in-page links to anchor points. This relies on the font itself having this feature added.
+
+```css
+html {
+  scroll-behavior: smooth;
+}
+```
+
+More examples, including javascript `window.scroll()`.
+
+https://css-tricks.com/snippets/jquery/smooth-scrolling/<br />
+http://iamdustan.com/smoothscroll/
+
+Support: https://caniuse.com/css-scroll-behavior
+
+Supported by Safari 15.4 (13 March 2022). Otherwise Safari Polyfill is required:
+
+<script defer src="https://unpkg.com/smoothscroll-polyfill@0.4.4/dist/smoothscroll.min.js"></script>
+
+Older example (2017)<br />
+https://www.w3schools.com/howto/howto_css_smooth_scroll.asp
+The jQuery example on this page worked for Maude The Store page. Having anchor links with smooth scroll and padding offset (don’t use margin on the html elements, only padding) 
+
+## scroll-padding-top
+
+Add an offset to the viewable area. Useful when you have a sticky menu and are scrolling to anchor points.
+
+```css
+html {
+  scroll-padding-top: 20px;
+}
+```
+
+Supported in Safari from 14.1 (April 25 2021).
+
+WordPress example.
+
+```php
+<style>
+ <?php if(is_user_logged_in()): ?>
+   html {
+     scroll-padding-top: calc( var(--header-height) + 32px);
+   }
+ 
+   @media screen and (max-width: 782px) {
+     scroll-padding-top: calc( var(--header-height) + 46px);
+   }
+ <?php else: ?>
+   html {
+     scroll-padding-top: var(--header-height);
+   }
+ <?php endif; ?>
+</style>
+```
+
+## font-variant-numeric
+
+Most useful with `tabular-nums` for making numbers have a fixed width, which is useful for things like displaying time/clocks.
+
+```css
+font-variant-numeric: tabular-nums; 
+```
+
+Other options include ordinal, slashed-zero and diagonal-fractions.
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/font-variant-numeric
+
+
+## z-index
+
+Create a new stacking context.
+
+```css
+isolation: isolate;
+```
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/isolation
+
+
+## @layer
+
+Support for this was introduced in browsers from around March 2022.
+
+An overview, also including Container Queries (@container) and Scoped Styles: https://www.w3.org/2021/10/TPAC/demos/css-architecture.html
+
+https://ishadeed.com/article/cascade-layers/
+
+
+## @container
+
+CSS Container Queries
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Container_Queries
+
+
+## Links
+
+[MDN: CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+
+[smolcss.dev](https://smolcss.dev/)
+
+[css-irl.info](https://css-irl.info/)
+
+[Open Props](https://open-props.style/)
+
+[Open Color](https://yeun.github.io/open-color/)
+
+[3D Transforms](https://polypane.app/css-3d-transform-examples/)
+
+https://drafts.csswg.org/
+
+https://www.w3.org/Style/CSS/
+
+https://whatwg.org/ (HTML)

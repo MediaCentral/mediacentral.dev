@@ -17,3 +17,12 @@ To get started with Docusaurus on Vercel, you can use the [Docusaurus CLI](https
 ```shell
 npx create-docusaurus@latest my-website classic
 ```
+
+# Notes
+
+Minimum version Node.js >=16.14
+
+```bash
+nvm use 16.16.0
+npm run start
+```
