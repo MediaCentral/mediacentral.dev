@@ -32,15 +32,10 @@ const config = {
       'classic',
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
-        docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          // editUrl:
-          //   'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-        },
+        docs: false,
         blog: {
-          showReadingTime: true,
+          routeBasePath: '/', // Serve the blog at the site's root
+          showReadingTime: false,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           // editUrl:
@@ -64,11 +59,10 @@ const config = {
         },
         items: [
           {
-            to: '/blog/tags/',
+            to: '/tags/',
             position: 'left',
-            label: 'Topics',
+            label: 'All Tags',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
           {
             href: 'https://github.com/MediaCentral/mediacentral-docs',
             label: 'GitHub',
