@@ -1,0 +1,290 @@
+---
+slug: wordpress-iamges
+title: WordPress images
+tags: [wordpress]
+---
+
+<!--truncate-->
+
+## Custom image sizes
+
+Add custom image sizes to `functions.php`. Replace 'xxxx' with the name of your theme (this is to ensure a unique function name).
+
+WordPress documentation: [add_image_size()](https://developer.wordpress.org/reference/functions/add_image_size/)
+
+```php
+/**
+ * Custom image sizes
+ */
+add_action('after_setup_theme', 'xxxx_theme_setup');
+function xxxx_theme_setup() {
+  add_image_size('full_640', 640);
+  add_image_size('full_750', 750);
+  add_image_size('full_828', 828);
+  add_image_size('full_1080', 1080);
+  add_image_size('full_1200', 1200);
+  add_image_size('full_1440', 1440);
+  add_image_size('full_1920', 1920);
+  add_image_size('full_2048', 2048);
+  add_image_size('full_2560', 2560);
+}
+```
+
+The new images created will be scaled, not cropped, to create each new size. The image sizes above are based on the [Next.js default device sizes](https://nextjs.org/docs/api-reference/next/image#device-sizes), with the addition of the 1440 and 2560 sizes. 
+
+To add an image size that gets cropped:
+
+```php
+add_action( 'after_setup_theme', 'xxxx_theme_setup' );
+function xxxx_theme_setup() {
+  add_image_size( 'logo', 120, 80, true ); // true = crop
+  add_image_size( 'logo-retina', 240, 160, true );
+}
+```
+
+Show all sizes available for the current theme:
+
+```php
+<?php
+  global $_wp_additional_image_sizes;
+  print '<pre>';
+  print_r( $_wp_additional_image_sizes );
+  print '</pre>';
+?>
+```
+
+## Regenerate image sizes
+
+If changes to image sizes is made after some images have already been loaded, use the [Regenerate Thumbnails](https://wordpress.org/plugins/regenerate-thumbnails/) plugin or the WP-CLI command: `wp media regenerate`.
+
+## Usage
+
+An example using an image from an ACF image field. This example assumes the width is full screen, i.e. `100vw`.
+
+```php
+<?php
+  $img = get_field('hero_image');
+  $width = $img['sizes'][ 'full_2560-width' ];
+  $height = $img['sizes'][ 'full_2560-height' ];
+?>
+
+<img
+  src="<?php echo $img['sizes']['full_2560']; ?>"
+  srcset="
+    <?php echo $img['sizes']['full_640']; ?> 640w,
+    <?php echo $img['sizes']['full_750']; ?> 750w,
+    <?php echo $img['sizes']['full_828']; ?> 828w,
+    <?php echo $img['sizes']['full_1080']; ?> 1080w,
+    <?php echo $img['sizes']['full_1200']; ?> 1200w,
+    <?php echo $img['sizes']['full_1440']; ?> 1440w,
+    <?php echo $img['sizes']['full_1920']; ?> 1920w,
+    <?php echo $img['sizes']['full_2048']; ?> 2048w,
+    <?php echo $img['sizes']['full_2560']; ?> 2560w
+  "
+  sizes="100vw"
+  alt="<?php echo $img['alt']; ?>"
+  class=""
+  loading="lazy"
+  width="<?php echo $width; ?>"
+  height="<?php echo $height; ?>"
+/>
+```
+
+Only include `loading="lazy"` if it is not in the viewport when the page loads.
+
+## Sizes
+
+The browser does not know the size at which the image will be rendered on the page until it has downloaded and parsed all the relevant CSS and JavaScript files. 
+
+If we give sizes based on screen width then the browser will know which image to use and can start downloading it.
+
+Therefore, the sizes attribute is a list to let the browser know what size the image will be at different browser sizes / breakpoints. 
+
+It is often easiest to use the 'vw' unit for sizes relative to the viewport width. e.g. 100vw would be full width.
+
+However, the width doesn’t have to be expressed as a viewport width unit. It can be any length including absolute and relative length. You can even use CSS calc() to do things like auto-calculate margins dynamically.
+
+:::caution
+
+The sizes attribute should always be used when srcset width descriptors are used. If the sizes attribute is not provided the browser will assume the image is full width i.e. `100vw`.
+
+:::
+
+```html
+<img sizes="
+  [media-condition] [length],
+  [media-condition] [length],
+  [media-condition] [length],
+  [default-length]"
+/>
+```
+
+The browser users the first `[media-condition]` that is matched. If no conditions are matched it will use the last value `[default-length]`.
+
+Using `max-width` conditions the screen size will get bigger and bigger. In this case the image would be full width on mobile, two column on tablet and three column on desktop.
+
+```html
+sizes="
+  (max-width: 840px) 100vw,
+  (max-width: 1200px) 50vw,
+  33vw
+"
+```
+
+## Tailwind sizes
+
+If using Tailwind, where the breakpoints use min-width, we need to start with the largest breakpoints and get smaller. The default size will be for when the browser is less than 640px.
+
+```html
+sizes="
+  (min-width: 1536px) 5vw,  <!-- 2xl -->
+  (min-width: 1280px) 10vw, <!-- xl -->
+  (min-width: 1024px) 20vw, <!-- lg -->
+  (min-width: 768px) 25vw,  <!-- md -->
+  (min-width: 640px) 50vw,  <!-- sm -->
+  100vw
+"
+```
+
+The [Cloud Four tutorial](https://cloudfour.com/thinks/responsive-images-101-part-5-sizes/) further explains responsive images. 
+
+Or view the official [WHATWG specification](https://html.spec.whatwg.org/multipage/images.html#sizes-attributes).
+
+## Media
+
+[get_stylesheet_directory_uri()](https://developer.wordpress.org/reference/functions/get_stylesheet_directory_uri/)
+
+Gets the directory of the current theme.
+
+This example uses `x` descriptors, useful for fixed size images such as logos.
+
+```php
+<img 
+  src="<?php echo get_stylesheet_directory_uri(); ?>/assets/logo-1x.png"
+  srcset="
+    <?php echo get_stylesheet_directory_uri(); ?>/assets/logo-1x.png,
+    <?php echo get_stylesheet_directory_uri(); ?>/assets/logo-2x.png 2x
+  "
+  alt="" 
+  width="" 
+  height="" 
+/>
+```
+
+## Fade in 
+
+The initial state of the image needs to have zero opacity, plus the transition settings will be added. Add the javascript to an `onload` attribute to change the classes to affect the opacity.
+
+The background colour needs to be added to the container element of the image.
+
+```html
+<img 
+  class="transition-opacity duration-300 opacity-0 ease-in"
+  onload="
+    javascript: this.classList.add('opacity-40');
+    this.classList.remove('opacity-0');
+  "
+/>
+```
+
+Note, it seems to work best by adding the `onload` code to the image tag and therefore the code should always run. If the javascript is added after the tag it is possible the image has already loaded, especially on localhost when the image is cached.
+
+Any overlay text to be animated in will need an id attached and set the classes.
+
+```html
+<h1 
+  id="hero-text" 
+  class="opacity-0 duration-300 transition delay-300 transform translate-y-4"
+>
+  Welcome
+</h1>
+```
+
+Additional javascript is added to the `onload` attribute to affect a fade in and up.
+
+```
+<img 
+  class="transition-opacity duration-300 opacity-0 ease-in"
+  onload="
+    javascript: this.classList.add('opacity-40');
+    this.classList.remove('opacity-0');
+    document.getElementById('hero-text').classList.remove('opacity-0', 'translate-y-4');
+  "
+/>
+```
+
+And finally, we should add a `preload` to the header to ensure the hero image loads quickly. This needs to include all the srcset image sizes so that the correct size will be preloaded.
+
+The `href` can be removed so unsupported brwosers do not download an unneeded image. [credit](https://www.stefanjudis.com/today-i-learned/how-to-preload-responsive-images-with-imagesizes-and-imagesrcset/)
+
+```php
+<?php 
+  if( is_page_template( 'page-templates/home.php' ) ):
+
+    $hero = get_field('hero_desktop_image');
+?>
+  <link
+    rel="preload" 
+    as="image" 
+    href="<?php echo $hero['sizes']['full_2560']; ?>"
+    imagesrcset="
+      <?php echo $hero['sizes']['full_640']; ?> 640w,
+      <?php echo $hero['sizes']['full_750']; ?> 750w,
+      <?php echo $hero['sizes']['full_828']; ?> 828w,
+      <?php echo $hero['sizes']['full_1080']; ?> 1080w,
+      <?php echo $hero['sizes']['full_1200']; ?> 1200w,
+      <?php echo $hero['sizes']['full_1440']; ?> 1440w,
+      <?php echo $hero['sizes']['full_1920']; ?> 1920w,
+      <?php echo $hero['sizes']['full_2048']; ?> 2048w,
+      <?php echo $hero['sizes']['full_2560']; ?> 2560w
+    "
+    sizes="100vw"
+  >
+<?php 
+  endif;
+?>
+```
+
+If using `<picture>` for art direction of different breakpoints then we need to write the preload links for each breakpoint using the `media` attribute. [credit](https://web.dev/preload-responsive-images/) 
+
+```
+<?php 
+  if( is_page_template( 'page-templates/fome.php' ) ):
+    $hero = get_field('hero_desktop_image');
+    $hero_mobile = get_field('hero_image_mobile');
+?>
+
+    <link
+      rel="preload" 
+      as="image" 
+      imagesrcset="
+        <?php echo $hero['sizes']['full_640']; ?> 640w,
+        <?php echo $hero['sizes']['full_750']; ?> 750w,
+        <?php echo $hero['sizes']['full_828']; ?> 828w
+      "
+      sizes="100vw"
+      media="(max-width: 828px)"
+    >
+
+    <link
+      rel="preload" 
+      as="image" 
+      imagesrcset="
+        <?php echo $hero['sizes']['full_640']; ?> 640w,
+        <?php echo $hero['sizes']['full_750']; ?> 750w,
+        <?php echo $hero['sizes']['full_828']; ?> 828w,
+        <?php echo $hero['sizes']['full_1080']; ?> 1080w,
+        <?php echo $hero['sizes']['full_1200']; ?> 1200w,
+        <?php echo $hero['sizes']['full_1440']; ?> 1440w,
+        <?php echo $hero['sizes']['full_1920']; ?> 1920w,
+        <?php echo $hero['sizes']['full_2048']; ?> 2048w,
+        <?php echo $hero['sizes']['full_2560']; ?> 2560w
+      "
+      sizes="100vw"
+      media="(min-width: 828.1px)"
+    >
+
+<?php 
+  endif;
+?>
+```
