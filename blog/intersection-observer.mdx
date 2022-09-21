@@ -1,0 +1,81 @@
+---
+slug: intersection-observer
+title: WordPress cheatsheet
+tags: [javascript, css]
+---
+
+<!--truncate-->
+
+## Animation
+
+Using Intersection Observer and Tailwind for a "fade-in and up" animation.
+
+```
+<script>
+  const fadeinupList = document.querySelectorAll(".fadeinup")
+
+  const callback = (entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.remove("translate-y-4", "opacity-0", "sm:translate-y-4", "sm:opacity-0")
+      }
+    });
+  };
+
+  const options = {
+    root: null,
+    rootMargin: '-100px',
+    threshold: 0
+  }
+
+  const observer = new IntersectionObserver(callback, options)
+
+  fadeinupList.forEach(item => {
+    observer.observe(item)
+  })
+</script>
+```
+
+## Installation
+
+1. Add the above js at the bottom of the page. 
+
+2. Add the `fadeinup` class to any element that will be animated.
+
+3. The animated element needs the transition settings for the initial state.
+
+Basic example:
+
+```html
+class="transition transform translate-y-10 opacity-0 fadeinup"
+```
+
+Responsive example, with delay:
+
+```html
+class="transition duration-1000 transform sm:delay-300 sm:translate-y-4 sm:opacity-0 fadeinup"
+```
+
+In the above example the delay is only applied on breakpoints `sm` and up. This is useful when we want a slight delay on additional columns, but on mobile there is no delay.
+
+In this example, the fade-in and translate-up are also only applied on breakpoints `sm` and up.
+
+Be sure that all the classes are set to be removed to affect the animation.
+
+```js
+entry.target.classList.remove("translate-y-4", "opacity-0", "sm:translate-y-4", "sm:opacity-0")
+```
+
+## Options
+
+`rootMargin: '-100px'` means the element will need to be scrolled 100px into the viewport before it is triggered.
+
+threshold of 0 means as soon as any part of the element is visible it will be triggered. A value of 1 means the entire element must be visible to be triggered. Or it can be any fraction e.g. 0.5
+
+Based on the [Introduction to scroll animations with Intersection Observer](https://dev.to/ljcdev/introduction-to-scroll-animations-with-intersection-observer-d05) tutorial.
+
+## Links
+
+[Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
+
+[How to Detect When a Sticky Element Gets Pinned](https://davidwalsh.name/detect-sticky)

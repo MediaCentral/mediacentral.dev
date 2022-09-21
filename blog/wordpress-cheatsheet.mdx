@@ -1,0 +1,408 @@
+---
+slug: wordpress-cheatsheet
+title: WordPress cheatsheet
+tags: [wordpress]
+---
+
+<!--truncate-->
+
+## Links
+
+https://wphierarchy.com/
+
+[Theme Handbook](https://developer.wordpress.org/themes/)
+
+[Code Reference](https://developer.wordpress.org/reference/)
+
+[Core Functions](https://codex.wordpress.org/Function_Reference/) - lists most of the core functions, excluding Template Tags.
+
+[Template Tags](https://codex.wordpress.org/Template_Tags/)
+
+
+## Conditional Tags
+
+https://codex.wordpress.org/Conditional_Tags
+
+Check what conditions a page has, archive, custom posts etc
+
+```php
+is_page( 42 ) 
+is_page( 'contact' )
+```
+
+## Pages and Posts
+
+[get_page_link()](https://developer.wordpress.org/reference/functions/get_page_link/)<br />
+Get the permalink url for a page.
+
+```php
+<a href="<?php echo get_page_link(8); ?>">
+  Contact
+</a>
+```
+
+Or during a loop, leave blank for the current page.
+
+```php
+<a href="<?php echo get_page_link(); ?>">
+  <?php echo esc_html( get_the_title() ); ?>
+</a>
+```
+
+[get_the_title()](https://developer.wordpress.org/reference/functions/get_the_title/)<br />
+Get the title of a page or post while outside of the loop. See comments about whether to escape the output or not.
+
+```php
+To display the title safely:
+<?php echo esc_html( get_the_title() ); ?>
+
+Or if the title needs to include HTML tags:
+<?php echo wp_kses_post( get_the_title() ); ?>
+```
+
+[the_title()](https://developer.wordpress.org/reference/functions/the_title/)<br />
+Display or retrieve the current post title with optional markup. e.g. add `h1` markup either side of the output.
+
+```php
+<?php the_title( '<h1 class="text-2xl">', '</h1>' ); ?>
+```
+
+[get_the_ID()](https://developer.wordpress.org/reference/functions/get_the_id/)<br />
+Retrieve the ID of the current item in the WordPress Loop. When used on the blog homepage it will return the first post, even if outside of the loop. In that case, use `get_queried_object_id()`.
+
+```php
+<?php echo get_the_ID(); ?>
+```
+
+[the_excerpt()](https://developer.wordpress.org/reference/functions/the_excerpt/)<br />
+If the excerpt is empty, WordPress automatically creates an excerpt using the first 55 words of the post. See documentation to change the length, and remove the default `[...]`.
+
+```php
+<?php the_excerpt(); ?>
+```
+
+[get_the_date()](https://developer.wordpress.org/reference/functions/get_the_date/)<br />
+Set the format under `Settings > General`.
+
+```php
+<?php echo get_the_date(); ?>
+
+// Or control the format independently from the WordPress settings
+<?php echo get_the_date( 'D M j' ); ?>
+
+// Or an example when used with metadata
+<time datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>">
+  <?php echo esc_html( get_the_date() ); ?>
+</time>
+```
+
+[the_content()](https://developer.wordpress.org/reference/functions/the_content/)<br />
+Display the post content.
+
+```php
+<?php the_content(); ?>
+```
+
+## Blog homepage
+
+The template file **home.php** is used to render the blog posts index, whether it is being used as the front page or on a separate static page. If home.php does not exist, WordPress will use **index.php**.
+
+Enable thumbnail / feature image support. Add to `functions.php`.
+
+```php
+add_theme_support( 'post-thumbnails' );
+```
+
+We can add editable fields, e.g. for the page heading and intro, with ACF by using the location rule `Show this field group if **Page Type** is equal to **Posts Page** `.
+
+Example blog posts index page. 
+
+
+```php
+<h1>
+  <?php the_field('page_heading', get_queried_object_id() ); ?>
+</h1>
+
+<div>
+  <?php the_field( 'intro', get_queried_object_id() ); ?>
+</div>
+
+<?php 
+  if ( have_posts() ) : 
+
+    while ( have_posts() ) :
+      the_post();
+
+      $myID = get_the_ID();
+
+      // Get the thumbnail image, in this case the "full_2560"
+      $img = wp_get_attachment_image_src( get_post_thumbnail_id( $myID ), "full_2560" );
+      $url = $img[0];
+      $width = $img[1];
+      $height = $img[2];
+    ?>
+
+      <a href="<?php echo get_permalink(); ?>" class="">
+
+        <img 
+          alt="<?php echo get_the_title($myID); ?>"
+          src="<?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_2560' )); ?>" 
+          srcset="
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_640' )); ?> 640w,
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_750' )); ?> 750w,
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_828' )); ?> 828w,
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_1080' )); ?> 1080w,
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_1200' )); ?> 1200w,
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_1400' )); ?> 1400w,
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_1920' )); ?> 1920w,
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_2048' )); ?> 2048w,
+            <?php echo esc_url(get_the_post_thumbnail_url($myID, 'full_2560' )); ?> 2560w
+          "
+          sizes="(max-width: 767px) 100vw, (max-width: 1535px) calc(100vw - 80px), calc(100vw - 164px)"
+          class="object-cover w-full h-full"
+          width="<?php echo $width; ?>"
+          height="<?php echo $height; ?>"
+        />
+
+        <h2 class="text-2xl">
+          <?php the_title(); ?>
+        </h2>
+
+        <p class="text-sm">
+          <?php the_date(); ?>
+        </p>
+
+      </a>
+
+    <?php
+    endwhile;
+
+  endif;
+?>
+```
+
+## Categories
+
+[get_categories()](https://developer.wordpress.org/reference/functions/get_categories/)<br />
+Retrieves a list of category objects. The function only returns categories that have been used by at least one post. 
+
+Example to list all the categories in alphabetical order. 
+
+```php
+<?php
+  $categories = get_categories( array(
+      'orderby' => 'name',
+      'order'   => 'ASC'
+  ) );
+
+  foreach ( $categories as $category ) {
+    ?>
+      <a href="<?php echo get_term_link( $category, 'category' ); ?>" class="">
+        <?php echo $category->name; ?>
+      </a>
+    <?php
+  }
+?>
+```
+
+Or list them as a bullet point list, [wp_list_cats​()](https://developer.wordpress.org/reference/functions/wp_list_cats/).
+
+**Single post**
+
+[wp_get_post_categories()](https://developer.wordpress.org/reference/functions/wp_get_post_categories/)<br />
+Retrieve the list of categories for a single post.
+
+This example outputs a comma separated list.
+
+```php
+<?php
+  $postterms = get_the_terms( get_the_ID(), 'category' );
+
+  $mycount = 0;
+  foreach ( $postterms as $term ) {
+    $mycount++;
+?>
+    <a href="<?php echo get_term_link( $term, 'category' ); ?>" class="">
+      <?php echo $term->name; ?><?php if( $mycount != sizeof($postterms) ){ echo ","; } ?>
+    </a>
+<?php
+  }
+?>
+```
+
+Or the same as above can be output using [the_category()](https://developer.wordpress.org/reference/functions/the_category/) but with less control, i.e. less ability to further customise the output.
+
+## Customiser
+
+The following removes all the customiser sections. Customise as needed (pun intended). Note the priority of `50` which is needed if removing the `nav_menus`.
+
+```php
+function projectX_customize_register( $wp_customize ) {
+	$wp_customize->remove_section('title_tagline');
+	$wp_customize->remove_section('colors');
+	$wp_customize->remove_section('header_image');
+	$wp_customize->remove_section('background_image');
+	$wp_customize->remove_panel('nav_menus');
+	$wp_customize->remove_panel('widgets');
+	$wp_customize->remove_section('static_front_page');	 
+	$wp_customize->remove_section('custom_css');
+}
+add_action( 'customize_register', 'projectX_customize_register', 50 );
+```
+
+## Shortcode
+
+```php
+<?php echo do_shortcode( '[hf_form slug="contact"]' ); ?>
+```
+
+Create own shortcode: https://pagely.com/blog/creating-custom-shortcodes/
+
+## Error log
+
+https://wordpress.org/support/article/debugging-in-wordpress/
+
+``` php
+// Enable WP_DEBUG mode, default is false
+define( 'WP_DEBUG', true );
+
+// Enable Debug logging, defaults to /wp-content/debug.log
+define( 'WP_DEBUG_LOG', true );
+
+// Or define a location
+define( 'WP_DEBUG_LOG', '/tmp/wp-errors.log' );
+
+// Disable display of errors and warnings, default is true
+define( 'WP_DEBUG_DISPLAY', false );
+@ini_set( 'display_errors', 0 );
+```
+
+## Include
+
+```
+<?php include dirname(__FILE__).'/../template-parts/call-to-action.php'; ?>
+```
+
+## Image from theme folder
+
+```
+<img src="<?php echo get_stylesheet_directory_uri(); ?>/img/example.svg" alt="" width="" height="">
+```
+
+## Admin email notifications
+
+Disable email notifications for when WordPress automatically updates core, plugins or themes.
+
+```php title="functions.php"
+/* Disable email notifications for core updates */
+add_filter('auto_core_update_send_email', 'wpb_stop_auto_update_emails', 10, 4);
+ 
+function wpb_stop_update_emails($send, $type, $core_update, $result)
+{
+ if (!empty($type) && $type == 'success') {
+   return false;
+ }
+ return true;
+}
+ 
+/* Disable email notifications for plugin updates */
+add_filter('auto_plugin_update_send_email', '__return_false');
+ 
+ /* Disable email notifications for theme updates */
+add_filter('auto_theme_update_send_email', '__return_false');
+```
+
+[credit](https://www.wpbeginner.com/wp-tutorials/how-to-disable-automatic-update-email-notification-in-wordpress/)
+
+## Admin customisations
+
+```php
+/**
+ * Remove dashboard widgets and welcome
+ */
+
+function remove_dashboard_meta() {
+  remove_meta_box('dashboard_incoming_links', 'dashboard', 'normal');	
+  remove_meta_box('dashboard_plugins', 'dashboard', 'normal');	
+  remove_meta_box('dashboard_primary', 'dashboard', 'normal'); 	
+  remove_meta_box('dashboard_secondary', 'dashboard', 'normal'); 	
+  remove_meta_box('dashboard_quick_press', 'dashboard', 'side'); 	
+  remove_meta_box('dashboard_recent_drafts', 'dashboard', 'side');	
+  remove_meta_box('dashboard_recent_comments', 'dashboard', 'normal'); 	
+  remove_meta_box('dashboard_right_now', 'dashboard', 'normal'); 	
+  remove_meta_box('dashboard_activity', 'dashboard', 'normal'); 
+}
+add_action('admin_init', 'remove_dashboard_meta');
+
+remove_action('welcome_panel', 'wp_welcome_panel');
+
+/**
+ * Remove links from Admin Bar
+ */
+function remove_admin_bar_links() {
+    global $wp_admin_bar;
+    $wp_admin_bar->remove_menu('wp-logo');          // Remove the Wordpress logo
+    $wp_admin_bar->remove_menu('about');            // Remove the about Wordpress link
+    $wp_admin_bar->remove_menu('wporg');            // Remove the Wordpress.org link
+    $wp_admin_bar->remove_menu('documentation');    // Remove the Wordpress documentation link
+    $wp_admin_bar->remove_menu('support-forums');   // Remove the support forums link
+    $wp_admin_bar->remove_menu('feedback');         // Remove the feedback link
+    // $wp_admin_bar->remove_menu('site-name');        // Remove the site name menu
+    $wp_admin_bar->remove_menu('view-site');        // Remove the view site link
+    $wp_admin_bar->remove_menu('updates');          // Remove the updates link
+    $wp_admin_bar->remove_menu('comments');         // Remove the comments link
+    $wp_admin_bar->remove_menu('new-content');      // Remove the content link
+    // $wp_admin_bar->remove_menu('w3tc');             // If you use w3 total cache remove the performance link
+    // $wp_admin_bar->remove_menu('my-account');       // Remove the user details tab
+}
+add_action( 'wp_before_admin_bar_render', 'remove_admin_bar_links' );
+
+/**
+ * Remove Comments in admin menu
+ */
+function post_remove () {
+   remove_menu_page('edit-comments.php');
+}
+add_action('admin_menu', 'post_remove');
+
+/**
+ * Remove embed
+ */
+function my_deregister_scripts(){
+  wp_deregister_script( 'wp-embed' );
+}
+add_action( 'wp_footer', 'my_deregister_scripts' );
+
+/**
+ * Remove emoji
+ */
+remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+remove_action( 'wp_print_styles', 'print_emoji_styles' );
+
+/**
+ * Set image quality (default is 82)
+ */
+add_filter('jpeg_quality', function($arg){return 95;});
+
+/**
+ * Remove block library css if not using Gutenberg
+ */
+function smartwp_remove_wp_block_library_css(){
+  wp_dequeue_style( 'wp-block-library' );
+  wp_dequeue_style( 'wp-block-library-theme' );
+  wp_dequeue_style( 'wc-blocks-style' ); // Remove WooCommerce block CSS
+} 
+add_action( 'wp_enqueue_scripts', 'smartwp_remove_wp_block_library_css', 100 );
+```
+
+[credit](https://www.wpbeginner.com/wp-tutorials/how-to-disable-automatic-update-email-notification-in-wordpress/)
+
+Remove dashboard widgets and welcome [credit](https://adamboother.com/blog/how-to-remove-widgets-from-wordpress-dashboard/) and [credit](https://www.wpbeginner.com/wp-tutorials/how-to-remove-the-welcome-panel-in-wordpress-dashboard/)
+
+Remove links from Admin Bar [credit](https://paulund.co.uk/how-to-remove-links-from-wordpress-admin-bar)
+
+Remove wp-embed [credit](https://wordpress.stackexchange.com/questions/211701/what-does-wp-embed-min-js-do-in-wordpress-4-4)
+
+Remove Emoji [credit](https://www.itsupportguides.com/knowledge-base/wordpress/wordpress-how-to-remove-wp-emoji-release-min-js-and-css/)
+
+Remove Block Library CSS [credit](https://smartwp.com/remove-gutenberg-css/)

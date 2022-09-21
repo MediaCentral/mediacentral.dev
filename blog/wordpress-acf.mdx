@@ -1,0 +1,64 @@
+---
+slug: wordpress-acf
+title: Advanced Custom Fields (ACF)
+tags: [wordpress]
+---
+
+<!--truncate-->
+
+## Text Fields
+
+Basic usage:
+
+```php
+<?php the_field('heading'); ?>
+
+// Subfield for repeaters
+<?php the_sub_field('heading'); ?>
+```
+
+## Blog archive
+
+When adding custom fields for the posts archive page, set the location as `Page Type is equal to Posts Page`.
+
+Then on the index.php or archive.php to access the value:
+
+```php
+<?php the_field('page_heading', get_queried_object_id() ); ?>
+```
+
+## Options page
+
+Add an options page to the admin menu.
+
+[Add options page](https://www.advancedcustomfields.com/resources/acf_add_options_page/)
+
+https://www.advancedcustomfields.com/resources/options-page/
+
+Requires Pro version.
+
+Add to `functions.php` to install.
+
+```php title="functions.php"
+if( function_exists('acf_add_options_page') ) {
+
+  // Basic minimal
+  acf_add_options_page();
+
+  // Footer example
+  acf_add_options_page(array(
+    'page_title'  => 'Footer Settings',
+    'menu_title'  => 'Footer',
+    'menu_slug'   => 'footer-settings',
+    'capability'  => 'edit_posts',
+    'redirect'    => false
+  ));
+
+}
+```
+
+Then, for example, to use a field called `heading`:
+
+```php
+<?php echo get_field('heading', 'option'); ?>
+```
