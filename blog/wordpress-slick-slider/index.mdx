@@ -1,0 +1,275 @@
+---
+slug: wordpress-slick-slider
+title: WordPress Slick Slider
+tags: [wordpress]
+---
+
+<!--truncate-->
+
+[kenwheeler.github.io/slick/](https://kenwheeler.github.io/slick/)
+
+Download, unzip and copy the “slick” folder (inside main folder) to the top level of the theme.
+
+Enqueue css and js in functions.php:
+
+```php
+if( is_page_template( 'page-templates/example.php' ) ){
+  wp_enqueue_style( 'XXX-slick', get_stylesheet_directory_uri() . '/slick/slick.css' );
+  wp_enqueue_style( 'XXX-slicktheme', get_stylesheet_directory_uri() . '/slick/slick-theme.css' );
+  wp_enqueue_script( 'XXX-slick', get_stylesheet_directory_uri() . '/slick/slick.min.js', array('jquery'));
+}
+```
+
+## HTML
+
+The basics of the slider structure is this, but below it is wrapped with ACF php code.
+
+```html
+<div class="slider-container">
+  <div>your content</div>
+  <div>your content</div>
+  <div>your content</div>
+</div>
+```
+
+### Using with a Tailwind CSS grid
+
+The .slider-container can be part of a grid layout to give the overall layout, but the children will need to have their own grid. To use grid layout in a slide, wrap the whole thing with a plain div, as that one will be changed to display: block by slick slider js.
+
+```html
+<div class="slider-container col-span-9">
+
+  <div>
+    <div class=”grid grid-cols-9”>
+      <div>your content</div>
+    </div>
+  </div>
+
+  <div>
+    <div class=”grid grid-cols-9”>
+      <div>your content</div>
+    </div>
+  </div>
+
+</div>
+```
+
+### Using an ACF Gallery field called 'gallery'
+
+```php
+<?php
+ 
+$images = get_field('gallery');
+ 
+if ($images) : ?>
+  <div class="slider-container">
+    <?php foreach ($images as $image) : ?>
+      <div>
+        <a href="<?php echo $image['url']; ?>">
+          <img src="<?php echo $image['sizes']['large']; ?>" alt="<?php echo $image['alt']; ?>" />
+        </a>
+      </div>
+    <?php endforeach; ?>
+  </div>
+<?php endif; ?>
+```
+
+### Using an ACF Repeater field
+
+[ACF Repeater documentaion](https://www.advancedcustomfields.com/resources/repeater/)
+
+```php
+<?php
+  if( have_rows('repeater_field_name') ):
+?>
+
+    <div class="slider-container">
+
+      <?php
+        while( have_rows('repeater_field_name') ) : the_row();
+          $sub_value = get_sub_field('sub_field');
+      ?>
+
+          <div>
+            <div class=”grid grid-cols-9”>
+              <div>your content</div>
+            </div>
+          </div>
+
+      <?php
+        endwhile;
+      ?>
+
+<?php 
+  endif;
+?>
+```
+
+### Using an ACF Relationship field
+
+Very similar to the Repeater field code, but the main difference is it is important to NOT use the variable name $post when using a Relationship field.
+
+```php
+<?php
+  $projects = get_field('case_studies');
+  if ($projects) : 
+?>
+  <h1>Case Studies</h1>
+  <?php 
+    foreach( $projects as $project ): // variable must NOT be called $post (IMPORTANT) 
+      $projectID = $project->ID;
+      echo get_the_title($projectID);
+    endforeach; ?>
+<?php
+  endif;
+?>
+```
+
+## JS
+
+Place after the html code.
+
+```
+<script type="text/javascript">
+  jQuery(document).ready(function(){
+    jQuery('.slider-container').slick({
+      // setting-name: setting-value
+    });
+  });
+</script>
+```
+
+## CSS
+
+If needed, especially when multiple sliders are used across the site, wrap in the class name of the slider to give the styles a higher specificity.
+
+The previous and next arrows get added with javascript and must be styled with css. 
+
+The code below helps to position and style the arrows. Save images for the left and right arrows in the `/img` folder of the theme. If Tailwind css is being inlined to the page then note url below includes the url relative to the root of the site, otherwise it can be relative to the theme `img/arrow.svg`.
+
+
+```css
+/* First set the button the same size as the arrow image */
+ .slick-prev, .slick-next {
+   width: 65px;
+   height: 30px;
+ }
+
+/* Then position the buttons */
+.slick-prev {
+  left: -75px;
+  /* right: 0; */
+  /* top: unset; */
+  /* bottom: -10px; */
+  z-index: 2;
+}
+
+.slick-next {
+  right: -35px;
+}
+
+/* Finally add the arrow image */
+.slick-prev:before {
+  background: url(wp-content/themes/projectX/img/right-long-solid.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  content: "";
+  display: block;
+  height: 30px;
+  width: 65px;
+}
+
+.slick-next:before {
+  background: url(wp-content/themes/projectX/img/right-long-solid.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  content: "";
+  display: block;
+  height: 30px;
+  width: 65px;
+}
+```
+
+If Tailwind css is inlined then the svg images will need to be added to the php template.
+
+```html
+<style>
+  .slick-prev:before,
+  .slick-next:before {
+    background: url(<?php echo get_stylesheet_directory_uri(); ?>/img/right-long-solid.svg);
+  }
+</style>
+```
+
+## Responsive
+
+When the number of slides to show varies. Each slide will be equal width but margin needs to be added to give spacing. Therefore the wrapper container must account for the extra margin width.
+
+
+## Full width
+
+![Screenshot of full width slider](slider.jpg)
+
+A full width slider can be created by using center mode. Set the width of the center slide using css and the previous and next slides will partially show.
+
+```js
+jQuery('.stallion-slider').slick({
+  dots: false,
+  infinite: true,
+  speed: 300,
+  slidesToShow: 1,
+  centerMode: true,
+  variableWidth: true,
+
+  responsive: [
+    {
+      breakpoint: 720,
+      settings: {
+        slidesToShow: 1,
+        centerMode: false,
+        variableWidth: false,
+      }
+    }
+  ]
+});
+```
+
+The previous and next slides can then be faded out slightly to help focus the center slide. Set the background of the image container to be either black or white, depending on if it needs to be darker or lighter.
+
+```css
+.slick-slide img {
+  @apply transition-opacity duration-300 opacity-70;
+}
+
+.slick-current img {
+  @apply opacity-100;
+}
+```
+
+Using some [quick maths](https://www.youtube.com/watch?v=M3ujv8xdK2w) we can position the buttons. In this example, `360px` is half the width of the slide and `37px` is the full width of the button.
+
+```css
+.slick-prev {
+  left: calc(50% - 360px - 37px);
+  top: 45%;
+}
+
+.slick-next {
+  top: 45%;
+  right: calc(50% - 360px - 37px);
+}
+```
+
+## Hide while loading
+
+Add `slider-container` class, or anything to identify (only) the images within the slider.
+
+```css
+.slider-container img {
+  display: none;
+}
+
+.slider-container .slick-initialized img {
+  display: block;
+}
+```

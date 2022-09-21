@@ -1,0 +1,78 @@
+---
+slug: next-performance
+title: Next.js Performance
+tags: [nextjs]
+---
+
+<!--truncate-->
+
+## Analyzing Packages
+
+Use [@next/bundle-analyzer](https://github.com/vercel/next.js/tree/canary/packages/next-bundle-analyzer) to analyze the bundles of your Next.js application.
+
+### Installation
+
+`npm install @next/bundle-analyzer`
+
+or
+
+`yarn add @next/bundle-analyzer`
+
+In `next.config.js` add the `withBundleAnalyzer` const and then wrap the `module.exports` in the `withBundleAnalyzer()` function.
+
+```jsx
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
+module.exports = withBundleAnalyzer({})
+```
+
+Then to run from the command line:
+
+```sh
+ANALYZE=true yarn build
+```
+
+## Conformance
+
+Requires Next.js 11 or greater.
+
+Install
+
+```sh
+npx next lint
+```
+
+Run
+
+```sh
+next lint
+```
+
+Install and configure [credit](https://devinshoemaker.com/blog/next-js/configure-eslint)
+
+## Preact
+
+```sh
+npm install preact
+```
+
+Add to next.config.js
+
+```js
+module.exports = {
+  webpack(config, { dev, isServer }) {
+    // Replace React with Preact in client production build
+    if (!dev && !isServer) {
+      Object.assign(config.resolve.alias, {
+        react: 'preact/compat',
+        'react-dom/test-utils': 'preact/test-utils',
+        'react-dom': 'preact/compat',
+      })
+    }
+
+    return config
+  },
+}
+```
