@@ -1,0 +1,307 @@
+---
+slug: wordpress-contact-form-styling
+title: WordPress Contact Form Styling
+tags: [wordpress, css]
+---
+
+<!--truncate-->
+
+Adding forms using the "HTML Forms" WordPress plugin and Tailwind CSS.
+
+## CSS
+
+First add the base css.
+
+```css
+/* CONTACT FORM */
+
+/* Set color of text input by user */
+.has-float-label input {
+  @apply w-full text-black bg-white;
+}
+
+/* Set color of textarea input by user */
+.has-float-label textarea {
+  @apply w-full text-black bg-white h-36;
+}
+
+/* Placeholder text color */
+.has-float-label span {
+  @apply text-black cursor-text;
+}
+
+/* Success or error message text */
+.hf-message {
+  @apply mt-5 text-black;
+}
+
+.has-float-label {
+  @apply relative block;
+}
+
+.has-float-label input,
+.has-float-label select,
+.has-float-label textarea,
+.submit {
+  @apply focus:outline-none focus:ring-gray-300 focus:ring-2;
+}
+
+.has-float-label input::placeholder,
+.has-float-label textarea::placeholder {
+  @apply leading-4;
+}
+
+/* Label style when focus, data entered */
+.has-float-label > span {
+  @apply absolute left-0 pl-4 text-xs transition-all duration-300 top-2;
+}
+
+/* State before any data entered, placeholder <span> */
+.has-float-label input:placeholder-shown:not(:focus) + *,
+.has-float-label select:placeholder-shown:not(:focus) + *,
+.has-float-label textarea:placeholder-shown:not(:focus) + * {
+  @apply text-[17px] font-light text-black leading-4;
+  @apply pl-4; /* Should be the same as horizontal padding for input fields below */
+  @apply top-8; /* Should be the same as vertical padding for input fields below */
+}
+
+/* Set border of text input and inner padding */
+.has-float-label input,
+.has-float-label select {
+  @apply px-4 py-8 text-[17px] text-black leading-4 border border-black;
+}
+
+/* Set border of textarea input and inner padding */
+.has-float-label textarea {
+  @apply px-4 py-8 border border-black;
+}
+
+/* CONTACT FORM END */
+```
+
+## HTML
+
+Wrap html in a grid structure. This is the html that gets saved in the HTML Forms plugin settings. It is likely this will already be inside a grid cell layout and this wrapper will only have one to two columns (depending on breakpoints and complexity of the form).
+
+```html
+<div class="grid grid-cols-1 2xl:grid-cols-2 2xl:gap-x-5 gap-y-6">
+
+  <label class="has-float-label">
+    <input
+      name="firstname"
+      type="text"
+      placeholder="&nbsp;"
+      required
+    />
+    <span>First name *</span>
+  </label>
+
+</div>
+```
+
+During development the code can be worked on in the template. 
+
+When ready, extract everything, including the outer grid. Save code to `/template-parts/contact-form.html` and include with HTML Form plugin.
+
+```php
+<?php echo do_shortcode( '[hf_form slug="contact"]' ); ?>
+```
+
+Add template part to purge configuration in `tailwind.config.js`.
+
+```js
+"./template-parts/contact-form.html",
+```
+
+## Text field
+
+```html
+<label class="has-float-label">
+  <input
+    name="firstname"
+    type="text"
+    placeholder="&nbsp;"
+    required
+  />
+  <span>First name *</span>
+</label>
+```
+
+## Textarea
+
+```html
+<label class="has-float-label has-float-label--textarea">
+  <textarea
+    name="message"
+    rows="3"
+    cols="80"
+    placeholder="&nbsp;"
+  ></textarea>
+  <span>Message</span>
+</label>
+```
+
+## Dropdown
+
+Additional style for dropdown (may need to be updated)
+
+```css
+select.select__custom {
+  background-repeat: no-repeat;
+  background-position: bottom 30px right 24px;
+  background-color: white;
+  padding-right: 1em;
+
+  appearance: none;
+  border: var(--border);
+  font-size: var(--font-size);
+  max-width: 100%;
+  padding: 24px;
+  width: 100%;
+
+  &:focus {
+    outline: 0;
+  }
+}
+```
+
+## Submit button
+
+```html
+<button
+type="submit"
+class="w-full md:w-min text-[17px] font-semibold bg-gold hover:opacity-70 transition-opacity duration-300 text-center py-4 px-10 text-white tracking-widest"
+>
+  SEND
+</button>
+```
+
+## Custom Checkbox
+
+Based in part on [Accessible Checkbox](https://www.a11ymatters.com/pattern/checkbox/).
+
+Add the css.
+
+:::note
+
+The hover styles have been commented out and need to be reviewed.
+
+:::
+
+```css
+/* Checkbox start */
+
+.checkbox {
+  @apply absolute left-0 w-6 h-6 opacity-0;
+}
+
+/* Style shown only when tabbing with keyboard */
+.checkbox:focus-visible + label {
+  @apply ring-black ring-1 ring-offset-2;
+}
+
+.checkbox + label {
+  @apply block cursor-pointer select-none pl-9;
+}
+
+/* Style of the checkbox, unchecked */
+.checkbox + label::before {
+  @apply absolute top-0 left-0 w-6 h-6 bg-white border-2 border-teal;
+  content: "";
+}
+
+/* Hover style */
+/* .checkbox + label:hover::before {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+} */
+
+/* This will be the checked style, but set to hidden */
+.checkbox + label::after {
+  @apply absolute w-[10px] h-[9px] opacity-0 left-[7px] top-[7px] bg-no-repeat;
+  content: "";
+}
+
+/* .checkbox + label:hover::after {
+  background-image: url(wp-content/themes/customdigital/img/tick-b.svg);
+  content: "";
+  opacity: 1;
+} */
+
+.checkbox:checked + label::after {
+  opacity: 1;
+}
+
+/* .checkbox:checked + label:hover::after {
+  background-image: url(wp-content/themes/customdigital/img/tick.svg);
+  content: "";
+  opacity: 1;
+} */
+
+/* .checkbox:checked + label::before {
+  background: black;
+  border-color: white;
+} */
+
+/* Checkbox end */
+```
+
+The checked style uses a svg image which needs to be loaded in page so the url is correct.
+
+```php
+<style>
+.checkbox + label::after {
+  background-image: url(<?php echo get_stylesheet_directory_uri(); ?>/img/tick.svg);
+}
+</style>
+```
+
+Add the html code. The grouping using a fieldset is to help with a11y of screen readers.
+
+```html
+<fieldset>
+
+  <legend>
+    How did you hear about us?
+  </legend>
+    
+  <div class="flex">
+    
+    <div class="relative">
+      
+      <input
+        name="HowDidYouHearAboutUs"
+        class="checkbox"
+        id="friends"
+        type="checkbox"
+        value="friends"
+      />
+      <label for="friends">Friends</label>
+      
+    </div>
+
+    <div class="relative">
+      
+      <input
+        name="HowDidYouHearAboutUs"
+        class="checkbox"
+        id="other"
+        type="checkbox"
+        value="Other"
+      />
+      <label for="other">Other</label>
+      
+    </div>
+    
+  </div>
+  
+</fieldset>
+```
+
+This is the svg code for the tick.
+
+```svg
+<svg width="10" height="9" viewBox="0 0 10 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.54102 0L3.95898 6.21362L1.25 3.42924L0 4.71496L4.16602 9L10 1.28571L8.54102 0Z" fill="#158FBB"/>
+</svg>
+```

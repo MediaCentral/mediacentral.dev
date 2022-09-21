@@ -406,3 +406,39 @@ Remove wp-embed [credit](https://wordpress.stackexchange.com/questions/211701/wh
 Remove Emoji [credit](https://www.itsupportguides.com/knowledge-base/wordpress/wordpress-how-to-remove-wp-emoji-release-min-js-and-css/)
 
 Remove Block Library CSS [credit](https://smartwp.com/remove-gutenberg-css/)
+
+## Customise login page
+
+Add company logo. Add following code to functions.php.
+
+Upload logo to media and change url in below code. Logo space is 300 x 100 px but the logo style is set to contain.
+
+```php
+function wpb_login_logo() { ?>
+  <style type="text/css">
+      .login {
+        background-color: #4d4d4d;
+      }
+      
+      #login h1 a, .login h1 a {
+      background-image: url(<?php echo get_site_url(); ?>/wp-content/uploads/2021/11/logo.png);
+      height:100px;
+      width:300px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      padding-bottom: 10px;
+      }
+  </style>
+<?php }
+add_action( 'login_enqueue_scripts', 'wpb_login_logo' );
+
+function wpb_login_logo_url() {
+  return home_url();
+}
+add_filter( 'login_headerurl', 'wpb_login_logo_url' );
+
+function wpb_login_logo_url_title() {
+  return get_bloginfo('name');
+}
+add_filter( 'login_headertext', 'wpb_login_logo_url_title' );
+```

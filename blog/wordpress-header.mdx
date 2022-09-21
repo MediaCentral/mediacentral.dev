@@ -1,0 +1,390 @@
+---
+slug: wordpress-header
+title: WordPress Header
+tags: [wordpress, css, javascript]
+---
+
+<!--truncate-->
+
+## Header setup
+
+How to do a hero with full height less menu header height. This takes into account the WordPress admin bar when logged in.
+
+There are three states of the admin bar:
+- (max-width: 600px) has a height of 46px, bar scrolls away
+- (max-width: 782px) has a height of 46px, bar is fixed at top of screen
+- (min-width: 783px) has a height of 32px, bar is fixed at top of screen
+
+The header (which will typically contain the logo and menu) will have a fixed height which is set with the custom property `--header-height`. Breakpoints can also be added if the height changes, for example smaller screens will often have a smaller header.
+
+```css
+:root {
+  
+  --header-height: 160px;
+  
+  @media (max-width: 767px) {
+    --header-height: 88px;
+  }
+
+}
+
+.site-header {
+  height: var(--header-height);
+
+  .admin-bar & {
+    top: 32px;
+
+    @media screen and (max-width: 782px) {
+      top: 46px;
+    }
+  }
+}
+
+.main-content {
+  margin-top: var(--header-height);
+}
+
+/* Break point at which WP header scrolls away */
+@media screen and (max-width: 600px) {
+  .admin-bar {
+
+    /* starts off static */
+    .site-header {
+      position: static; 
+    }
+
+    /* sticky-admin class is added with js */
+    &.sticky-admin .site-header {
+      top: 0;
+      position: fixed;
+    }
+
+    /* as header starts off static we remove the top margin */
+    .main-content {
+      margin-top: 0;
+    }
+
+    /* as the header becomes sticky we add back the top margin */
+    &.sticky-admin .main-content {
+      margin-top: var(--header-height);
+    }
+  }
+}
+```
+
+Html in `header.php`.
+
+```html
+<header class="site-header">
+		
+  <div class="site-branding">
+
+    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
+      <?php
+        $custom_logo_id = get_theme_mod( 'custom_logo' );
+        $image = wp_get_attachment_image_src( $custom_logo_id , 'full' );
+        echo file_get_contents($image[0]);
+      ?>
+    </a>
+
+  </div>
+
+  <nav class="main-navigation">
+    
+    <button class="menu-toggle" aria-controls="menu-modal" aria-expanded="false"><?php esc_html_e( 'Primary Menu', 'arrowfield' ); ?></button>
+
+    <?php
+      wp_nav_menu( 
+        array(
+          'theme_location'  => 'main_menu',
+          'menu_class'      => 'main-menu',
+          'container'       => false
+        )
+      ); 
+    ?>
+
+  </nav>
+
+</header>
+
+<main id="main" class="main-content">
+```
+
+## Sticky admin bar
+
+We need to handles the case where up tp a max-width of 600px the admin bar scrolls away. To manage this, add a file `/js/admin.js` that will add the class `sticky-admin` to the `body` element when the page has scrolled 46px (the height of the admin bar).
+
+```js
+// Add sticky-admin class to body
+// Used for logged in users when screen is less than 600px
+
+var ready = (callback) => {
+  if (document.readyState != "loading") callback();
+  else document.addEventListener("DOMContentLoaded", callback);
+};
+
+ready(() => {
+  // set container to make sticky.
+  var stickyContainerAdmin = document.querySelector("body");
+
+  // set scroll distance
+  var scrollDistanceAdmin = 46;
+
+  // Listen for scroll
+  window.addEventListener("scroll", function () {
+    if (scrollY > scrollDistanceAdmin) {
+      stickyContainerAdmin.classList.add("sticky-admin");
+    } else {
+      stickyContainerAdmin.classList.remove("sticky-admin");
+    }
+  });
+});
+```
+
+Then add to `functions.php` with the rest of the `wp_enqueue_scripts`.
+
+```php
+if( is_user_logged_in() ) {
+  wp_enqueue_script( 'projectX-admin', get_template_directory_uri() . '/js/admin.js', array('projectX-basicScroll'), false, true );
+}
+```
+
+## Hero image
+
+If we have a full screen height hero image we need to take into account the menu header and also the admin bar when logged in. Using the [mobile chin code](/components/hero#mobile-chin) we can use a custom property to set the height.
+
+A full screen desktop image would need dimensions 2560 x 1440 (27-inch iMac), but can be slightly less height due to browser chrome and the website header. Let's say **2560 x 1400 px**.
+
+Based on [screensizemap.com](https://screensizemap.com/) and [yesviz.com/viewport](https://yesviz.com/viewport/) the portrait image gets shown on screens sizes up to 800 pixels wide. The height to width ratio for mobile devices is commonly between 1.78 and 2.16 (iPhones), while tablets can be as low as 1.3 (e.g. iPad Mini 768 x 1024 px). The 828px width breakpoint (used by Next.js) coincides with the iPhone 11 which has a device resolution of 828 x 1792. Therefore the size is recommended to be a minumum of **828 x 1600 px** (taking into account there will normally be some header chrome and we round to an even number). This means the image will be big enough to be double density on the most common mobile devices, while the size of the image does not need to be ridiculously big (especially in terms of height).
+
+When using `<picture>` it is best to wrap this in a `<div>` rather than using it is a top level grid cell as this can cause problems with height.
+
+```php
+<div class="hero">
+  
+  <?php
+    $hero = get_field('hero_image');
+    $hero_mobile = get_field('hero_image_mobile');
+    $width = $hero['sizes'][ 'full_2560-width' ];
+    $height = $hero['sizes'][ 'full_2560-height' ];
+  ?>
+
+  <div class="col-start-1 row-start-1">
+    
+    <picture>
+
+      <!-- Portrait -->
+      <source
+        media="(max-width: 828px)"
+        srcset="
+          <?php echo $hero_mobile['sizes']['full_640']; ?> 640w,
+          <?php echo $hero_mobile['sizes']['full_750']; ?> 750w,
+          <?php echo $hero_mobile['sizes']['full_828']; ?> 828w
+        "
+        sizes="100vw"
+      />
+
+      <!-- Landscape -->
+      <img
+        src="<?php echo $hero['sizes']['full_2560']; ?>"
+        srcset="
+          <?php echo $hero['sizes']['full_640']; ?> 640w,
+          <?php echo $hero['sizes']['full_750']; ?> 750w,
+          <?php echo $hero['sizes']['full_828']; ?> 828w,
+          <?php echo $hero['sizes']['full_1080']; ?> 1080w,
+          <?php echo $hero['sizes']['full_1200']; ?> 1200w,
+          <?php echo $hero['sizes']['full_1440']; ?> 1440w,
+          <?php echo $hero['sizes']['full_1920']; ?> 1920w,
+          <?php echo $hero['sizes']['full_2048']; ?> 2048w,
+          <?php echo $hero['sizes']['full_2560']; ?> 2560w
+        "
+        sizes="100vw"
+        alt="<?php echo $hero['alt']; ?>"
+        class="object-cover w-full h-full"
+        width="<?php echo $width; ?>"
+        height="<?php echo $height; ?>"
+      />
+
+    </picture>
+
+  </div>
+
+  /* Align bottom left */
+  <div class="flex flex-col justify-end col-start-1 row-start-1 p-7">
+    <h1 class="text-white heading1">
+      <?php the_field('page_heading'); ?>
+    </h1>
+  </div>
+
+</div>
+
+<script>
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+  
+  window.addEventListener('resize', function(event) {
+    vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }, true);
+</script>
+```
+
+```css
+.hero {
+  @apply grid grid-cols-1 grid-rows-1;
+  --hero-height: calc(var(--vh, 1vh) * 100 - var(--header-height));
+  
+  height: var(--hero-height);
+  
+  .admin-bar & {
+    height: calc(var(--hero-height) - 32px);
+    
+    @media screen and (max-width: 782px) {
+      height: calc(var(--hero-height) - 46px);
+    }
+  }
+}
+```
+
+## Skip link
+
+Uses the built-in `sr-only` and `not-sr-only` from Tailwind CSS with some minor additional styling for the focused state. The `z-[99999]` ensures the link is shown above the WordPress admin bar. 
+
+```
+<a class="sr-only focus:not-sr-only bg-white z-[99999] rounded outline-none  focus:px-4 focus:py-3 focus:absolute focus:ring-2 focus:ring-black focus:top-1 focus:left-1" href="#main">
+  Skip to content
+</a>
+```
+
+## Overlay modal menu
+
+https://micromodal.now.sh/
+
+Micromodal.js is a lightweight, configurable and a11y-enabled modal library written in pure JavaScript.
+
+Save [micromodal.min.js](https://unpkg.com/micromodal/dist/micromodal.min.js) to `/js` folder.
+
+Enqueue in `functions.php`.
+
+```
+wp_enqueue_script( 'projectX-micromodal', get_stylesheet_directory_uri() . '/js/micromodal.min.js' );
+```
+
+Add html to `footer.php`. The micromodal code also changes the `aria-expanded` attribute to the current state.
+
+```php
+<div id="menu-modal" aria-hidden="true">
+  <div 
+    aria-label="menu"
+    aria-modal="true" 
+    class="h-screen bg-white modal-overlay" 
+    role="dialog" 
+    tabindex="-1" 
+  >
+
+      <header class="flex justify-between">
+        <a 
+          href="<?php echo esc_url( home_url( '/' ) ); ?>" 
+          rel="home" 
+          title="Return to the homepage"
+        >
+          Logo
+        </a>
+        
+        <button aria-label="Close modal" data-micromodal-close>
+          Close menu
+        </button>
+      </header>
+
+      <div id="menu-modal-content">
+        Menu items
+      </div>
+
+  </div>
+</div>
+
+<script>
+MicroModal.init({
+  disableScroll: true, 
+  awaitCloseAnimation: true, 
+  onShow: modal => {
+    document.getElementById("hamburger").setAttribute('aria-expanded', true);
+  }, 
+  onClose: modal => {
+    document.getElementById("hamburger").setAttribute('aria-expanded', false);
+  }
+});
+</script>
+```
+
+Add the attribute to the hamburger button.
+
+```html
+<button data-micromodal-trigger="modal-1"></button>
+```
+
+Full hamburger html example:
+
+```html
+<nav id="site-navigation" class="main-navigation" aria-labelledby="hamburger">
+  
+  <button
+    id="hamburger"
+    class="leading-none rounded hamburger focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-4"
+    aria-controls="menu-modal"
+    aria-expanded="false"
+    aria-label="navigation menu"
+    data-micromodal-trigger="menu-modal"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="41" height="30" class="menu-desktop"><g fill="#2b2b2b"><path d="M7 0h34v6H7z"/><path d="M0 12h41v6H0z"/><path d="M12 24h29v6H12z"/></g></svg>
+  </button>
+
+</nav>
+```
+
+Add the css for the modal.
+
+```css
+/*--------------------------------------------------------------
+# Menu Modal
+--------------------------------------------------------------*/
+
+#menu-modal.is-open {
+  z-index: 99999; /* This is the minimum to be above admin bar */  
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+@keyframes mmfadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes mmfadeOut {
+  from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
+}
+
+#menu-modal {
+  display: none;
+}
+
+#menu-modal.is-open {
+  display: block;
+}
+
+#menu-modal[aria-hidden="false"] .modal-overlay {
+  animation: mmfadeIn .3s cubic-bezier(0.0, 0.0, 0.2, 1);
+}
+
+#menu-modal[aria-hidden="true"] .modal-overlay {
+  animation: mmfadeOut .3s cubic-bezier(0.0, 0.0, 0.2, 1);
+}
+
+#menu-modal .modal-overlay {
+  will-change: transform;
+}
+```

@@ -1,0 +1,179 @@
+---
+slug: wordpress-menu
+title: WordPress Menu
+tags: [wordpress, css]
+---
+
+<!--truncate-->
+
+
+## Register menu locations
+
+[register_nav_menus()](https://developer.wordpress.org/reference/functions/register_nav_menus/)
+
+Register each menu with a `location` (like a unique slug) and a `description`. The description will be shown on Wp-Admin > Appearance > Menus > Manage Locations.
+
+```php
+register_nav_menus(
+  array(
+    // 'location'  => 'description',
+    'main_menu' => 'Main menu',
+    'sub_menu1' => 'Sub menu 1 (top left)',
+    'sub_menu2' => 'Sub menu 2 (top right)',
+    'sub_menu3' => 'Sub menu 3 (bottom left)',
+    'sub_menu4' => 'Sub menu 4 (bottom right)',
+  )
+);
+```
+
+## Display the menu in a theme
+
+WordPress documentation: [wp_nav_menu()](https://developer.wordpress.org/reference/functions/wp_nav_menu/)
+
+`menu` can be the menu ID, slug, name, or object.
+
+Display menu using the `theme_location` from the above setup. That way the theme will not rely on a specific name of a menu existing, but it does rely on a menu being set for that location.
+
+`menu_class` is the css class that will be added to the `ul` of the menu output. It can be more than one class, e.g. `'sub-menu position-2'`
+
+Setting `container` to `false` will remove the container element (default is a `div`) that normally contains the `ul`.
+
+```php
+<?php
+  wp_nav_menu( 
+    array(
+      'theme_location'  => 'main_menu',
+      'menu_class'      => 'main-menu',
+      'items_wrap'      => '<ul class="%2$s">%3$s</ul>', // remove the id on the ul element
+      'container'       => false
+    )
+  ); 
+?>
+```
+
+Display a menu using a name (relies on this name being added through the WordPress admin).
+
+```php
+<?php
+  wp_nav_menu( 
+    array(
+      'menu' => 'Menu 1', 
+    )
+  ); 
+?>
+```
+
+## Menu style
+
+Assuming we use the menu class `.main-menu` as per above, we can style the menu like so.
+
+```
+.main-menu {
+  @apply flex;
+}
+
+.main-menu li {
+  @apply mr-12;
+
+  &:last-child {
+    @apply mr-0;
+  }
+}
+
+.main-menu a {
+  @apply text-base md:text-xl transition-opacity duration-300 hover:opacity-70;
+
+  .dark-header & {
+    @apply text-white;
+  }
+}
+```
+
+## Install menu
+
+This is slightly older code for the menu overlay that does not use a modal.
+
+```php
+<header class="site-header">
+  
+  <div class="header__wrapper">
+    
+    <div class="header__logo">
+      <a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
+        <?php
+          $custom_logo_id = get_theme_mod( 'custom_logo' );
+          $image = wp_get_attachment_image_src( $custom_logo_id , 'full' );
+          echo file_get_contents($image[0]);
+        ?>
+      </a>
+    </div>
+
+    <div class="header__menu">
+      <nav id="site-navigation" class="main-navigation">
+        <button
+          id="hamburger"
+          class="menu-toggle hamburger hamburger--emphatic"
+          aria-controls="primary-menu"
+          aria-expanded="false"
+          aria-label="menu"
+        >
+          <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+          </span>
+        </button>
+
+        <div class="menu-container-container">
+          <?php
+          wp_nav_menu( array(
+            'theme_location' =>
+          'menu-1', 'menu_id' => 'primary-menu', ) ); ?>
+
+          <div class="mobile-menu-extras">
+            <!--- If needed to add extra content in mobile overlay below menu --->
+          </div>
+
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>
+```
+
+## Alternate Colour Header
+
+When some pages have a dark header while others have a light header.
+
+Add to `functions.php` so all pages with a dark header will have a class of `dark-header` added to the `body` element.
+
+```php
+/**
+* Add body class for dark / light header
+*/
+add_filter('body_class', 'my_body_classes');
+function my_body_classes($classes) {
+ 
+  if ( 
+    is_page_template('page-templates/home.php') or 
+    is_page_template('page-templates/about.php') or 
+    is_page_template('page-templates/contact.php')
+  ) {
+    $classes[] = 'dark-header';
+  }
+ 
+  return $classes;
+}
+```
+
+Change :root to body so css custom properties can be overridden correctly.
+
+Example css.
+
+```css
+.site-header {
+  @apply bg-white;
+  
+  .dark-header & {
+    @apply bg-black;
+  }
+}
+```
