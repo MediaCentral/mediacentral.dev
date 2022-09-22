@@ -1,0 +1,68 @@
+---
+slug: hero
+title: Hero
+tags: [components]
+---
+
+<!--truncate-->
+
+## Mobile chin
+
+For a full height hero image, taking into account the chin on mobile devices.
+
+First we get the viewport height and we multiply it by 1% to get a value for a vh unit
+Then we set the value in the --vh custom property to the root of the document
+
+Add this above the hero.
+
+```html
+<script>
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+</script>
+```
+
+Then add the css to the hero element.
+
+```css
+.hero {
+  height: 100vh; /* Fallback for browsers that do not support Custom Properties */
+  height: calc(var(--vh, 1vh) * 100);
+}
+```
+
+[credit](https://ishadeed.com/article/cross-browser-development/#viewport-units), [credit](https://css-tricks.com/the-trick-to-viewport-units-on-mobile/)
+
+## Next.js
+
+Next.js starter code for a hero:
+
+```jsx
+<div
+  id="home-hero"
+  className="grid h-screen grid-rows-none bg-cream"
+  style={(cssProperties, { height: "100vh" })}
+>
+  <div className="relative w-full h-full col-start-1 row-start-1 row-end-3">
+    <Image
+      alt="Image description"
+      layout="fill"
+      objectFit="cover"
+      priority="true"
+      src={hero}
+    />
+  </div>
+
+  <div className="col-start-1 row-start-1 z-10 overflow-hidden h-[max-content]">
+    <h1>
+      Welcome
+    </h1>
+  </div>
+
+  <div className="z-10 grid content-center col-start-1 row-start-2 px-5 mb-4 xl:px-8 2xl:px-36">
+    <div>
+      Second
+    </div>
+  </div>
+</div>
+```

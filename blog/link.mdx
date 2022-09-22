@@ -1,0 +1,59 @@
+---
+slug: link
+title: Link
+tags: [components]
+---
+
+<!--truncate-->
+
+## Link with svg hover animation
+
+```html
+<a href="#" class="more">Go to project</a>
+```
+
+This is the bare minimum for a static svg icon after the link text.
+
+```css
+.more {
+  @apply flex items-center;
+}
+
+.more:after {
+  @apply w-[18px] h-[18px];
+  content: url('data:image/svg+xml; utf8, <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.15 8a.61.61 0 0 1-.18.47L8.47 15a.66.66 0 0 1-.47.17.68.68 0 0 1-.47-.17.63.63 0 0 1 0-.94l5.41-5.39H1.5a.68.68 0 0 1-.5-.18A.64.64 0 0 1 .85 8 .63.63 0 0 1 1 7.55a.64.64 0 0 1 .47-.18h11.47L7.53 2a.665.665 0 1 1 .94-.94l6.5 6.5a.6.6 0 0 1 .18.44z" fill="white"/></svg>');
+}
+```
+
+The following example has a hover animation with the icon moving to the right, and everything has an opacity applied. 
+
+The `justify-between` is only needed if the icon is to be pushed to the right of the container. In that case add `shink-0` to avoid shrinking the icon when the text pushes up against it.
+
+```css
+.more {
+  @apply flex items-center justify-between hover:opacity-70 transition-opacity;
+}
+
+.more:after {
+  @apply transition transform shrink-0 w-4 h-4;
+  content: url('data:image/svg+xml; utf8, <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.15 8a.61.61 0 0 1-.18.47L8.47 15a.66.66 0 0 1-.47.17.68.68 0 0 1-.47-.17.63.63 0 0 1 0-.94l5.41-5.39H1.5a.68.68 0 0 1-.5-.18A.64.64 0 0 1 .85 8 .63.63 0 0 1 1 7.55a.64.64 0 0 1 .47-.18h11.47L7.53 2a.665.665 0 1 1 .94-.94l6.5 6.5a.6.6 0 0 1 .18.44z" fill="white"/></svg>');
+}
+
+.more:hover:after {
+  @apply translate-x-1;
+}
+```
+
+## SVG notes
+
+The inline svg code must not have any line breaks. 
+
+SVG code must not have any `#` symbols (for example in the fill color), instead use something like `fill="rgb(50, 50, 50)"`. Use a [hex to rgb converter](https://www.rapidtables.com/convert/color/hex-to-rgb.html).
+
+Export the SVG so the vectors reach the edge of the viewBox. Then remove the `width=""` and `height=""`. The size of the SVG can then be controlled with the css, in the above example with `w-4 h-4`. 
+
+# Stripe button
+
+Subtle animation. Via https://twitter.com/adamwathan/status/1571175551393730560
+
+Finished results https://play.tailwindcss.com/paQYuuU1JB

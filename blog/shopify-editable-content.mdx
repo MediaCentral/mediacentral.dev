@@ -1,0 +1,60 @@
+---
+slug: shopify-editable-content
+title: Shopify Editable Content
+tags: [shopify]
+---
+
+<!--truncate-->
+
+The content must be in a Section. Include the section within the page template:
+
+```liquid
+{% section 'about' %}
+```
+
+Save the file `/sections/about.liquid` and place the editable content along with the schema.
+
+The [section scheme](https://shopify.dev/themes/architecture/sections/section-schema) tag `{% schema %} ... {% endschema %}` allows you to define various attributes of a section, such as the section name, any section blocks and settings to allow for theme editor customization options.
+
+The `name` attribute determines the section title that is shown in the theme editor (in the left hand menu when customizing the page). 
+
+The `settings` attribute holds all the data about the editable fields. It is an array of objects, with each object representing an input. 
+
+The required attributes of an input are `type`, `id` and `label`.
+
+:::caution
+
+All section setting IDs must be unique within each section. Having duplicate IDs within a section will result in an error.
+
+:::
+
+The [Input Settings](https://shopify.dev/themes/architecture/settings/input-settings) page lists all the different types available such as `text`, `textarea`, `checkbox` and `image_picker`.
+
+You can create `blocks` for a section. Blocks are reusable modules of content that can be added, removed, and reordered within a section.
+
+```liquid
+{% schema %}
+{
+  "name": "About",
+  "settings": [
+    {
+      "type": "text",
+      "id": "mytitle",
+      "label": "My Title"
+    }
+  ]
+}
+{% endschema %}
+```
+
+Use setting values in the liquid template by referencing the `id`.
+
+```liquid
+<h1>{{ section.settings.mytitle }}</h2>
+```
+
+It is preferable to use `richtext` for text requiring parapgraphs and basic markup such as bold and links. Otherwise, when using `textarea` line breaks will not show by default. Line breaks can be added with a filter.
+
+```liquid
+{{ section.settings.mytextarea | newline_to_br }}
+```
