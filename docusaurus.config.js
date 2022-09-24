@@ -31,6 +31,7 @@ const config = {
         blog: {
           routeBasePath: '/', // Serve the blog at the site's root
           showReadingTime: false,
+          postsPerPage: 'ALL',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           // editUrl:
