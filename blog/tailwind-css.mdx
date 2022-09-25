@@ -1,0 +1,264 @@
+---
+slug: tailwind-css
+title: Tailwind CSS
+tags: [css]
+---
+
+<!--truncate-->
+
+## Resources
+
+https://tailwindcss.com/docs/<br />
+Tailwind Docs
+
+https://play.tailwindcss.com/<br />
+Tailwind Play
+
+https://nerdcave.com/tailwind-cheat-sheet<br />
+Tailwind Cheat Sheet
+
+https://github.com/aniftyco/awesome-tailwindcss<br />
+Awesome Tailwind CSS
+
+## VS Code
+
+https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss<br />
+Tailwind CSS IntelliSense
+
+https://marketplace.visualstudio.com/items?itemName=heybourn.headwind<br />
+Headwind
+
+https://github.com/tailwindlabs/prettier-plugin-tailwindcss<br />
+A Prettier plugin for Tailwind CSS that automatically sorts classes based on our recommended class order.
+
+## Components
+
+https://tailwindui.com/
+
+https://daisyui.com/
+
+https://www.hyperui.dev/
+
+https://preline.co<br />
+Preline UI is an open-source set of prebuilt UI components based on the utility-first Tailwind CSS framework.
+
+https://tailblocks.cc/
+
+https://www.tailwind-kit.com/components
+
+https://tailwindcomponents.com/
+
+https://www.creative-tim.com/learning-lab/tailwind-starter-kit/presentation
+
+## Tools
+
+https://tailwindcss-calculator.com/
+
+https://styleguidefortailwind.com/
+
+https://github.com/timlrx/tailwind-nextjs-starter-blog<br />
+Starter Blog Template (Next,js + Tailwind)
+
+## Installation for Wordpress and Shopify
+
+For Next.js see: https://tailwindcss.com/docs/guides/nextjs
+
+```bash
+npm init -y
+npm install -D tailwindcss postcss postcss-cli autoprefixer cssnano
+```
+
+:::note
+
+Older versions of my PostCSS installation used the following plugins:
+
+`postcss-preset-env` - This allowed custom media queries, media queries with `<` and `>` comparison, and custom selectors. See note about disabling nesting for this plugin when using other nesting plugin. https://tailwindcss.com/docs/using-with-preprocessors#nesting
+
+`postcss-nested` now covered by Tailwind inbuilt version. See: https://tailwindcss.com/docs/using-with-preprocessors#nesting
+
+Could not get the new version working with `'postcss-custom-media': {}`, so can’t use custom media breakpoints.
+
+See postcss plugins here: https://www.postcss.parts/
+
+:::
+
+Make sure to add `/node_modules` to .gitignore.
+ 
+Install in `/css` and generate config files:
+
+```bash
+mkdir css && cd css && npx tailwindcss init -p
+```
+
+Configure Tailwind to remove unused styles in production.
+
+Example `tailwind.config.js` for WordPress:
+
+```js
+module.exports = {
+  content: [
+    "./**/*.{php,js,html}",
+  ],
+  ...
+}
+```
+
+Example `tailwind.config.js` for Shopify content:
+
+```
+content: ["./layout/theme.liquid", "./templates/*.liquid", "./assets/*.js"],
+```
+
+Add Tailwind to the main css file, `/css/tailwind.css`.
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+Configure `/css/postcss.config.js`.
+
+```js
+module.exports = {
+ plugins: {
+   "tailwindcss/nesting": {},
+   tailwindcss: { config: './css/tailwind.config.js' },
+   autoprefixer: {},
+   cssnano: {
+     preset: "default",
+     autoprefixer: { add: false },
+   },
+ },
+}
+```
+
+Add scripts to `package.json` for WordPress:
+
+```json
+    "dev": "postcss css/tailwind.css --output tailwind.css --watch",
+    "build": "postcss css/tailwind.css --output tailwind.css"
+```
+
+Add scripts to `package.json` for Shopify:
+
+```json
+    "dev": "postcss css/tailwind.css --output assets/tailwind.css --watch",
+    "build": "postcss css/tailwind.css --output assets/tailwind.css"
+```
+
+:::note
+
+Possibly need to configure .prettierignore:
+
+```
+./style.css
+style.css
+./tailwind.css
+tailwind.css
+```
+
+Configure .prettierignore for Shopify:
+
+```
+./assets/tailwind.css
+```
+
+:::
+
+Start Tailwind for development.
+
+```bash
+npm run dev
+```
+
+## Typography / Prose plugin
+
+https://tailwindcss.com/docs/typography-plugin#installation
+
+```bash
+npm install -D @tailwindcss/typography
+```
+
+## Forms Plugin
+
+https://tailwindcss.com/docs/plugins#forms
+
+## Wordpress theme setup
+
+Delete everything out of style.css except theme header info.
+
+In `functions.php` comment out `style.css` and add in `tailwind.css`:
+
+```php
+wp_enqueue_style(projectX-style',  get_template_directory_uri() . '/tailwind.css', array(), filemtime(get_stylesheet_directory() . '/tailwind.css'));
+```
+
+Or insert tailwind.css directly into the header. So, remove css from `functions.php` as per above. Then add to `header.php`.
+
+```php
+<style media="screen">
+  <?php include dirname(__FILE__).'/tailwind.css'; ?>
+</style>
+```
+
+## Shopify theme setup
+
+Add to theme.liquid after the base.css line.
+
+```
+{{ 'tailwind.css' | asset_url | stylesheet_tag }}
+```
+
+## Globals
+
+Add globals in styles/globals.css:
+
+@layer base {
+  p {
+    @apply pt-4;
+  }
+}
+
+## Customise the theme
+
+https://tailwindcss.com/docs/adding-custom-styles#customizing-your-theme
+
+
+Add custom font.
+
+```
+  theme: {
+    fontFamily: {
+      sans: ["aktiv-grotesk", "sans-serif"],
+    },
+  }
+```
+
+Extend the theme:
+
+```
+  theme: {
+    extend: {
+      fontSize: {
+        md: "1.0625rem",
+      },
+      fontFamily: {
+        usual: ["usual", "sans-serif"],
+      },
+      colors: {
+        'blk': '#243c5a',
+      },
+    },
+  },
+```
+
+## Breakpoints
+
+Can be used in the globals stylesheet like so:
+
+```css
+@media screen(md) {
+
+}
+```
