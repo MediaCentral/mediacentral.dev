@@ -1,0 +1,45 @@
+---
+slug: deno-notes
+title: Deno notes
+tags: [deno]
+---
+
+<!--truncate-->
+
+## HTTP server
+
+Examples using the HTTP server from the built in Deno standard library.
+
+https://deno.com/deploy/docs/examples
+
+```
+import { serve } from "https://deno.land/std@0.155.0/http/server.ts";
+```
+
+## JSX
+
+### Preact
+
+This can be extended to render from JSX by including Preact and `preact-render-to-string`.
+
+https://deno.com/deploy/docs/examples#ssr-jsx-preact
+
+Note that some examples use a `.jsx` or `.tsx` file extension, so Deno Deploy knows to interpret a given file as JSX/TSX.
+
+### Nano JSX
+
+Another option is to use [Nano JSX](https://github.com/nanojsx/nano) as shown in this example:
+
+https://deno.com/deploy/docs/using-jsx
+
+### Nano SSR
+
+Website in a single file
+
+https://deno.com/blog/a-whole-website-in-a-single-js-file
+
+https://deno.com/blog/a-whole-website-in-a-single-js-file-continued
+
+This example uses [nanossr](https://github.com/AaronO/nanossr), which is a tiny server-side renderer that uses Nano JSX with twind under the hood for styling.
+
+
