@@ -6,9 +6,32 @@ tags: [html]
 
 <!--truncate-->
 
+Minimal example:
+
 ```
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+```
+
+Example that includes for Apple and Android ([via Evil Martians](https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs?ck_subscriber_id=478670544)):
+
+```
+<link rel="icon" href="/favicon.ico" sizes="any"> <!-- 32×32 -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"> <!-- 180×180 -->
+<link rel="manifest" href="/manifest.webmanifest">
+```
+
+And the manifest:
+
+```
+// manifest.webmanifest
+{
+  "icons": [
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}
 ```
 
 :::note
@@ -27,3 +50,4 @@ WordPress plugin: https://wordpress.org/plugins/favicon-by-realfavicongenerator/
 
 Generator as used by above plugin: https://realfavicongenerator.net/
 
+https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
