@@ -1,5 +1,5 @@
 ---
-slug: wordpress-iamges
+slug: wordpress-images
 title: WordPress images
 tags: [wordpress]
 ---
@@ -42,7 +42,26 @@ function xxxx_theme_setup() {
 }
 ```
 
-Show all sizes available for the current theme:
+## Available sizes
+
+Show all sizes available for the current theme.
+
+https://developer.wordpress.org/reference/functions/get_intermediate_image_sizes/
+
+```php
+var_dump( get_intermediate_image_sizes() );
+```
+
+The above will output default sizes plus additional sizes. Snippet from the above function:
+
+```php
+$default_sizes    = array( 'thumbnail', 'medium', 'medium_large', 'large' );
+$additional_sizes = wp_get_additional_image_sizes();
+```
+
+[wp_get_additional_image_sizes()](https://developer.wordpress.org/reference/functions/wp_get_additional_image_sizes/)
+
+Returns a list of all currently registered image sub-sizes. Which essentially calls the following:
 
 ```php
 <?php
@@ -91,6 +110,12 @@ An example using an image from an ACF image field. This example assumes the widt
 ```
 
 Only include `loading="lazy"` if it is not in the viewport when the page loads.
+
+:::tip
+
+When using ACF images with the return format as an image array the output does not include the `full` image in the sizes key. But the original url is available as `$img['url']`  
+
+:::
 
 ## Sizes
 
