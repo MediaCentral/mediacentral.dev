@@ -48,6 +48,9 @@ Library of over 450+ UI components, sections, and pages.
 https://www.material-tailwind.com/<br />
 React and HTML components library for Material Design.
 
+https://a17t.miles.land/<br />
+A Tailwind CSS plugin that provides atomic components in a neutral design language.
+
 https://tailgrids.com/
 Components and blocks. Some free but mostly paid.
 
@@ -269,5 +272,19 @@ Can be used in the globals stylesheet like so:
 ```css
 @media screen(md) {
 
+}
+```
+
+## With Next.js
+
+To conditionally show a class would be something like this:
+
+```jsx
+function Notification() {
+  const [isNotification, setIsNotification] = useState(false);
+
+  return (
+    <div className={` ${isNotification ? "animate-ping" : null} h-2 w-2 m-5 bg-sky-400 rounded-full`}></div>
+  );
 }
 ```
